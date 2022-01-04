@@ -171,6 +171,4 @@ fn main() {
     let observation = station_observations(station).unwrap();
 
     let forecasts = forecast(coordinates).unwrap();
-    println!("{:?}", observation);
-    println!("{:?}", forecasts);
 }
