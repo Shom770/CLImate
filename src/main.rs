@@ -154,7 +154,7 @@ async fn station_observations(station_url: String) -> Result<ObservationData, re
     let description = properties["textDescription"].as_str().unwrap().to_string();
     
     let wind_speed = if properties["windSpeed"]["unitCode"].as_str().unwrap().ends_with("km_h-1") {
-                        (properties["windSpeed"]["value"].as_f64().unwrap() as f64) * 1.609
+                        (properties["windSpeed"]["value"].as_f64().unwrap() as f64) * 0.6213
                     }
                     else {
                         properties["windSpeed"]["value"].as_f64().unwrap()
@@ -172,4 +172,5 @@ fn main() {
 
     let forecasts = forecast(coordinates).unwrap();
     println!("{:?}", observation);
+    println!("{:?}", forecasts);
 }
