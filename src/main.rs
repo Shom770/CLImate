@@ -72,9 +72,9 @@ async fn station_metadata(args: Vec<String>) -> Result<Vec<String>, reqwest::Err
 
 
 #[tokio::main]
-async fn forecast(metadata: Vec<String>) -> Result<Vec<ForecastPeriod>, reqwest::Error> {
+async fn forecast(request_url: &String) -> Result<Vec<ForecastPeriod>, reqwest::Error> {
     let forecast_resp = reqwest::Client::new()
-        .get(&metadata[0])
+        .get(request_url)
         .header(reqwest::header::USER_AGENT, "2016wxfan@gmail.com")
         .header("Feature-Flags", thread_rng().gen_range(100..1000))
         .send()
@@ -173,12 +173,12 @@ fn main() {
 
     let observation = station_observations(format!("https://api.weather.gov/stations/{station}/observations/latest", station=station_name)).unwrap();
 
-    let forecasts = forecast(coordinates).unwrap();
+    let forecasts = forecast(&coordinates[0]).unwrap();
 
     let mut siv = cursive::default();
 
-    siv.add_layer(Dialog::text(format!("Temperature: {}° F\nDewpoint: {}° F\nConditions: {}\nWind Speed: {} MPH", observation.temperature, observation.dewpoint, observation.description, observation.wind_speed))
-        .title(format!("Conditions at {}", station_name))
+    siv.add_layer(Dialog::text(format!("Temperature: {}° F\nDewpoint: {}° F\nConditions: {}\nWind Speed: {:.2} MPH", observation.temperature, observation.dewpoint, observation.description, observation.wind_speed.round()))
+        .title(format!("Conditions at {}, {}", &coordinates[1], &coordinates[2]))
     );
 	siv.run();
 }
