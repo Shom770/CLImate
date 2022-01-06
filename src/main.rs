@@ -120,7 +120,7 @@ async fn closest_station(request_url: &String) -> Result<String, reqwest::Error>
     let station_resp = String::from(station_resp);
     let json_stations: Value = from_str(&station_resp).unwrap();
 
-    Ok(json_stations["features"][0]["properties"]["@id"].as_str().unwrap().to_string())
+    Ok(json_stations["features"][0]["properties"]["stationIdentifier"].as_str().unwrap().to_string())
 }
 
 #[tokio::main]
@@ -166,38 +166,19 @@ async fn station_observations(station_url: String) -> Result<ObservationData, re
 }
 
 fn main() {
-    // let args: Vec<String> = env::args().collect();
-    // let coordinates = station_metadata(args).unwrap();
+    let args: Vec<String> = env::args().collect();
+    let coordinates = station_metadata(args).unwrap();
 
-    // let station = closest_station(&coordinates[3]).unwrap() + "/observations/latest";
-    // let observation = station_observations(station).unwrap();
+    let station_name = closest_station(&coordinates[3]).unwrap();
 
-    // let forecasts = forecast(coordinates).unwrap();
+    let observation = station_observations(format!("https://api.weather.gov/stations/{station}/observations/latest", station=station_name)).unwrap();
+
+    let forecasts = forecast(coordinates).unwrap();
 
     let mut siv = cursive::default();
 
-	siv.add_layer(Dialog::text("Will NYC get snow?\nFind out!")
-        .title("Important")
-        .button("Next", next_part)
+    siv.add_layer(Dialog::text(format!("Temperature: {}° F\nDewpoint: {}° F\nConditions: {}\nWind Speed: {} MPH", observation.temperature, observation.dewpoint, observation.description, observation.wind_speed))
+        .title(format!("Conditions at {}", station_name))
     );
-
 	siv.run();
-}
-
-fn next_part(s: &mut Cursive) {
-    s.pop_layer();
-    s.add_layer(Dialog::text("Do you like dogs?")
-        .title("Question 1")
-        .button("Yes!", |cli| show_answer(cli, "Your opinion is of value."))
-        .button("No!", |cli| show_answer(cli, "You are a horrible person."))
-        .button("I don't know.", |cli| cli.add_layer(Dialog::info("You have to make a choice, try again.")))
-    );
-}
-
-fn show_answer(s: &mut Cursive, message: &str) {
-    s.pop_layer();
-    s.add_layer(Dialog::text(message)
-        .title("Results")
-        .button("Finish", |cli| cli.quit())
-    );
 }
