@@ -32,7 +32,8 @@ struct ObservationData {
     temperature: f64,
     dewpoint: f64,
     description: String,
-    wind_speed: f64
+    wind_speed: f64,
+    timestamp: String
 }
 
 #[tokio::main]
@@ -161,8 +162,10 @@ async fn station_observations(station_url: String) -> Result<ObservationData, re
                     else {
                         properties["windSpeed"]["value"].as_f64().unwrap()
                     };
+
+    let timestamp = (properties["timestamp"].as_str().unwrap())[11..16].to_string();
     
-    Ok(ObservationData{temperature, dewpoint, description, wind_speed})
+    Ok(ObservationData{temperature, dewpoint, description, wind_speed, timestamp})
 }
 
 fn main() {
@@ -178,7 +181,7 @@ fn main() {
     let mut siv = cursive::default();
 
     siv.add_layer(Dialog::text(format!("Temperature: {}° F\nDewpoint: {}° F\nConditions: {}\nWind Speed: {:.2} MPH", observation.temperature, observation.dewpoint, observation.description, observation.wind_speed.round()))
-        .title(format!("Conditions at {}, {}", &coordinates[1], &coordinates[2]))
+        .title(format!("Conditions at {}, {}, {} UTC", &coordinates[1], &coordinates[2], observation.timestamp))
     );
 	siv.run();
 }
