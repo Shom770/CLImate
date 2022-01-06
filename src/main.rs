@@ -1,3 +1,5 @@
+use cursive::Cursive;
+use cursive::views::Dialog;
 use rand::{thread_rng, Rng};
 use reqwest;
 use std::env;
@@ -164,11 +166,38 @@ async fn station_observations(station_url: String) -> Result<ObservationData, re
 }
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    let coordinates = station_metadata(args).unwrap();
+    // let args: Vec<String> = env::args().collect();
+    // let coordinates = station_metadata(args).unwrap();
 
-    let station = closest_station(&coordinates[3]).unwrap() + "/observations/latest";
-    let observation = station_observations(station).unwrap();
+    // let station = closest_station(&coordinates[3]).unwrap() + "/observations/latest";
+    // let observation = station_observations(station).unwrap();
 
-    let forecasts = forecast(coordinates).unwrap();
+    // let forecasts = forecast(coordinates).unwrap();
+
+    let mut siv = cursive::default();
+
+	siv.add_layer(Dialog::text("Will NYC get snow?\nFind out!")
+        .title("Important")
+        .button("Next", next_part)
+    );
+
+	siv.run();
+}
+
+fn next_part(s: &mut Cursive) {
+    s.pop_layer();
+    s.add_layer(Dialog::text("Do you like dogs?")
+        .title("Question 1")
+        .button("Yes!", |cli| show_answer(cli, "Your opinion is of value."))
+        .button("No!", |cli| show_answer(cli, "You are a horrible person."))
+        .button("I don't know.", |cli| cli.add_layer(Dialog::info("You have to make a choice, try again.")))
+    );
+}
+
+fn show_answer(s: &mut Cursive, message: &str) {
+    s.pop_layer();
+    s.add_layer(Dialog::text(message)
+        .title("Results")
+        .button("Finish", |cli| cli.quit())
+    );
 }
