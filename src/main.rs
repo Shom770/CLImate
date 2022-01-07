@@ -1,3 +1,5 @@
+use chrono::prelude::*;
+
 use cursive::Cursive;
 use cursive::views::Dialog;
 use rand::{thread_rng, Rng};
@@ -163,7 +165,7 @@ async fn station_observations(station_url: String) -> Result<ObservationData, re
                         properties["windSpeed"]["value"].as_f64().unwrap()
                     };
 
-    let timestamp = (properties["timestamp"].as_str().unwrap())[11..16].to_string();
+    let timestamp = properties["timestamp"].as_str().unwrap().to_string();
     
     Ok(ObservationData{temperature, dewpoint, description, wind_speed, timestamp})
 }
@@ -176,12 +178,24 @@ fn main() {
 
     let observation = station_observations(format!("https://api.weather.gov/stations/{station}/observations/latest", station=station_name)).unwrap();
 
-    let forecasts = forecast(&coordinates[0]).unwrap();
+    let _forecasts = forecast(&coordinates[0]).unwrap();
+
+    let last_observation = DateTime::<FixedOffset>::parse_from_rfc3339(&observation.timestamp).unwrap().with_timezone(&Utc);
+    let current_time = Utc::now();
+
+    let difference = current_time - last_observation
+
+    let formatted_difference = if difference.secs == 0 {
+                                "just now."
+                            }
+                            else {
+                                format!("{} minutes ago.", difference.secs / 60).as_str()
+                            };
 
     let mut siv = cursive::default();
 
     siv.add_layer(Dialog::text(format!("Temperature: {}° F\nDewpoint: {}° F\nConditions: {}\nWind Speed: {:.2} MPH", observation.temperature, observation.dewpoint, observation.description, observation.wind_speed.round()))
-        .title(format!("Conditions at {}, {}, {} UTC", &coordinates[1], &coordinates[2], observation.timestamp))
+        .title(format!("Conditions at {}, {} {}", &coordinates[1], &coordinates[2], formatted_difference))
     );
 	siv.run();
 }
