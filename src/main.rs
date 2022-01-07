@@ -183,13 +183,13 @@ fn main() {
     let last_observation = DateTime::<FixedOffset>::parse_from_rfc3339(&observation.timestamp).unwrap().with_timezone(&Utc);
     let current_time = Utc::now();
 
-    let difference = current_time - last_observation
+    let difference = current_time - last_observation;
 
     let formatted_difference = if difference.secs == 0 {
                                 "just now."
                             }
                             else {
-                                format!("{} minutes ago.", difference.secs / 60).as_str()
+                                format!("{} minutes ago.", difference.num_minutes()).as_str()
                             };
 
     let mut siv = cursive::default();
