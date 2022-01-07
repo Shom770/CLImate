@@ -185,17 +185,18 @@ fn main() {
 
     let difference = current_time - last_observation;
 
-    let formatted_difference = if difference.secs == 0 {
-                                "just now."
+    let formatted_difference = if difference.num_seconds() < 60 {
+                                String::from("just now.")
                             }
                             else {
-                                format!("{} minutes ago.", difference.num_minutes()).as_str()
+                                let diff_string = difference.num_minutes().to_string();
+                                diff_string + " minutes ago."
                             };
 
     let mut siv = cursive::default();
 
     siv.add_layer(Dialog::text(format!("Temperature: {}° F\nDewpoint: {}° F\nConditions: {}\nWind Speed: {:.2} MPH", observation.temperature, observation.dewpoint, observation.description, observation.wind_speed.round()))
-        .title(format!("Conditions at {}, {} {}", &coordinates[1], &coordinates[2], formatted_difference))
+        .title(format!("Conditions at {}, {} - {}", &coordinates[1], &coordinates[2], formatted_difference))
     );
 	siv.run();
 }
